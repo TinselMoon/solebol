@@ -1,62 +1,148 @@
 #include <Arduino.h>
 
-#define DIRECTION 8
-#define STEP 18
+#define M1_DIRECTION 19
+#define M1_STEP 20
+#define M1_SLEEP 21
+#define M1_RESET 47
+#define M1_ENABLE 48
 
+#define M2_DIRECTION 40
+#define M2_STEP 41
+#define M2_SLEEP 42
+#define M2_RESET 38
+#define M2_ENABLE 39
 
-int readButton(void);
+//Player 1
+#define BUTTON_1 4
+#define BUTTON_2 5
 
-namespace botao{
-    int button_1 = 4;
-    int button_2 = 5;
-    int button_3 = 6;
-    int button_4 = 7;
-}
+//Player 2
+#define BUTTON_3 6
+#define BUTTON_4 7
+
+#define FITA_LED 1000
+
+//Variables timer
+unsigned long timer_b1;
+unsigned long timer_b2;
+unsigned long timer_b3;
+unsigned long timer_b4;
+
+//Variables pressed
+bool b1_last = false;
+bool b2_last = false;
+bool b3_last = false;
+bool b4_last = false;
+
+bool b1_pressed = false;
+bool b2_pressed = false;
+bool b3_pressed = false;
+bool b4_pressed = false;
+
 
 void setup() {
   // put your setup code here, to run once:
-  /*pinMode(botao::button_1, INPUT_PULLUP);
-  pinMode(botao::button_2, INPUT_PULLUP);
-  pinMode(botao::button_3, INPUT_PULLUP);
-  pinMode(botao::button_4, INPUT_PULLUP);*/
+  pinMode(M1_DIRECTION, OUTPUT);
+    ledcSetup(1, 500, 8);
+    ledcAttachPin(M1_STEP, 1);
+  pinMode(M1_SLEEP, OUTPUT);
+  pinMode(M1_RESET, OUTPUT);
+  pinMode(M1_ENABLE, OUTPUT);
 
-  pinMode(DIRECTION, OUTPUT);
-  //pinMode(STEP, OUTPUT);
-  ledcSetup(0, 1100, 8);     // canal 0, 1000 Hz, resolução 8 bits
-  ledcAttachPin(STEP, 0);   // canal 0 ligado ao pino STEP}
-  ledcWrite(0, 128);         // 50% duty cycle
-  digitalWrite(DIRECTION, HIGH);
-  
+  pinMode(M2_DIRECTION, OUTPUT);
+  ledcSetup(0, 500, 8);
+  ledcAttachPin(M2_STEP, 0);
+  pinMode(M2_SLEEP, OUTPUT);
+  pinMode(M2_RESET, OUTPUT);
+  pinMode(M2_ENABLE, OUTPUT);
+
+  pinMode(BUTTON_1, INPUT_PULLUP);
+  pinMode(BUTTON_2, INPUT_PULLUP);
+  pinMode(BUTTON_3, INPUT_PULLUP);
+  pinMode(BUTTON_4, INPUT_PULLUP);
+
+  //ATIVAR OS DRIVERS
+  //DRIVER 1
+  digitalWrite(M1_SLEEP, HIGH);
+  digitalWrite(M1_RESET, HIGH);
+  digitalWrite(M1_ENABLE, LOW);
+  //DRIVER 2
+  digitalWrite(M2_SLEEP, HIGH);
+  digitalWrite(M2_RESET, HIGH);
+  digitalWrite(M2_ENABLE, LOW);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
+    // Buttons state:
+    if((digitalRead(BUTTON_1) == LOW) && b1_last == false){
+        timer_b1 = millis();
+        b1_last = true;
+    }
+    if((digitalRead(BUTTON_2) == LOW) && b2_last == false){
+        timer_b2 = millis();
+        b2_last = true;
+    }
+    if((digitalRead(BUTTON_3) == LOW) && b3_last == false){
+        timer_b3 = millis();
+        b3_last = true;
+    }
+    if((digitalRead(BUTTON_4) == LOW) && b4_last == false){
+        timer_b4 = millis();
+        b4_last = true;
+    }
 
-// put function definitions here:
-int readButton(void){
-    int button_high = 0;
-    int tempo = 0;
-    if(!digitalRead(botao::button_1) && !button_high){
-        tempo = millis();
-        button_high = 1;
+    if(digitalRead(BUTTON_1) == HIGH){
+        b1_last = false;
     }
-    if(!digitalRead(botao::button_2) && !button_high){
-        tempo = millis();
-        button_high = 2;
+    if(digitalRead(BUTTON_2) == HIGH){
+        b2_last = false;
     }
-    if(!digitalRead(botao::button_3) && !button_high){
-        tempo = millis();
-        button_high = 3;
+    if(digitalRead(BUTTON_3) == HIGH){
+        b3_last = false;
     }
-    if(!digitalRead(botao::button_4) && !button_high){
-        tempo = millis();
-        button_high = 4;
+    if(digitalRead(BUTTON_4) == HIGH){
+        b4_last = false;
     }
-    while(button_high && (millis() - tempo) < 50){
-        if(digitalRead(botao::button_1) && digitalRead(botao::button_2) && digitalRead(botao::button_3) && digitalRead(botao::button_4)){
-            return 0;
-        }
+
+    if(digitalRead(BUTTON_1) == LOW && (millis() - timer_b1 > 50)){
+        b1_pressed = true;
     }
-    return button_high;
+    else{
+        b1_pressed = false;
+    }
+    if(digitalRead(BUTTON_2) == LOW && (millis() - timer_b2 > 50)){
+        b2_pressed = true;
+    }
+    else{
+        b2_pressed = false;
+    }
+    if(digitalRead(BUTTON_3) == LOW && (millis() - timer_b3 > 50)){
+        b3_pressed = true;
+    }
+    else{
+        b3_pressed = false;
+    }
+    if(digitalRead(BUTTON_4) == LOW && (millis() - timer_b4 > 50)){
+        b4_pressed = true;
+    }
+    else{
+        b4_pressed = false;
+    }
+    
+    if(b1_pressed != b2_pressed){
+        digitalWrite(M1_DIRECTION, b1_pressed);
+        ledcWrite(1, 128);
+    }
+    else{
+        ledcWrite(1, 0);
+    }
+
+    if(b3_pressed != b4_pressed){
+        digitalWrite(M2_DIRECTION, b3_pressed);
+        ledcWrite(0, 128);
+    }
+    else{
+        ledcWrite(0, 0);
+    }
+
 }
