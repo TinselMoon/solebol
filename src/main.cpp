@@ -1,7 +1,18 @@
 #include <Arduino.h>
+#include "led_rgb.hpp"
 
-//FAZER FITA LED
+//FITA LED
+#define PIN_LED 13
+#define AMARELO 16768256 
+#define VERMELHO 16515843
+#define VERDE 63240
+#define AZUL 49911
+#define MAGENTA 16711935
+#define CIANO 3407871
+#define LARANJA 16093234
+#define LIMAO 13434777
 
+//Motores
 #define M1_DIRECTION 19
 #define M1_STEP 20
 #define M1_SLEEP 21
@@ -22,8 +33,6 @@
 #define BUTTON_3 6
 #define BUTTON_4 7
 
-#define FITA_LED 1000
-
 //Variables timer
 unsigned long timer_b1;
 unsigned long timer_b2;
@@ -41,9 +50,18 @@ bool b2_pressed = false;
 bool b3_pressed = false;
 bool b4_pressed = false;
 
+led_rgb LED;
+unsigned long timer_led = 0;
+int last_color = 0;
+
+const int colors[] = {VERMELHO, VERDE, AZUL, AMARELO, MAGENTA, CIANO, LARANJA, LIMAO};
+
+#define NUM_COLORS (sizeof(colors) / sizeof(colors[0]))
 
 void setup() {
-  // put your setup code here, to run once:
+
+    LED.init();
+
   pinMode(M1_DIRECTION, OUTPUT);
     ledcSetup(1, 500, 8);
     ledcAttachPin(M1_STEP, 1);
@@ -145,6 +163,17 @@ void loop() {
     }
     else{
         ledcWrite(0, 0);
+    }
+
+    //Fita led
+    if(millis()- timer_led > 2000){
+        timer_led = millis();
+        int color = random(0, NUM_COLORS);
+        if(last_color == color){
+            color = (color + 1) % NUM_COLORS;
+        }
+        last_color = color;
+        LED.print_color(colors[color]);
     }
 
 }
