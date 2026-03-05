@@ -62,34 +62,34 @@ void setup() {
 
     LED.init();
 
-  pinMode(M1_DIRECTION, OUTPUT);
+    pinMode(M1_DIRECTION, OUTPUT);
     ledcSetup(1, 500, 8);
     ledcAttachPin(M1_STEP, 1);
-  pinMode(M1_SLEEP, OUTPUT);
-  pinMode(M1_RESET, OUTPUT);
-  pinMode(M1_ENABLE, OUTPUT);
+    pinMode(M1_SLEEP, OUTPUT);
+    pinMode(M1_RESET, OUTPUT);
+    pinMode(M1_ENABLE, OUTPUT);
 
-  pinMode(M2_DIRECTION, OUTPUT);
-  ledcSetup(0, 500, 8);
-  ledcAttachPin(M2_STEP, 0);
-  pinMode(M2_SLEEP, OUTPUT);
-  pinMode(M2_RESET, OUTPUT);
-  pinMode(M2_ENABLE, OUTPUT);
+    pinMode(M2_DIRECTION, OUTPUT);
+    ledcSetup(0, 500, 8);
+    ledcAttachPin(M2_STEP, 0);
+    pinMode(M2_SLEEP, OUTPUT);
+    pinMode(M2_RESET, OUTPUT);
+    pinMode(M2_ENABLE, OUTPUT);
 
-  pinMode(BUTTON_1, INPUT_PULLUP);
-  pinMode(BUTTON_2, INPUT_PULLUP);
-  pinMode(BUTTON_3, INPUT_PULLUP);
-  pinMode(BUTTON_4, INPUT_PULLUP);
+    pinMode(BUTTON_1, INPUT_PULLUP);
+    pinMode(BUTTON_2, INPUT_PULLUP);
+    pinMode(BUTTON_3, INPUT_PULLUP);
+    pinMode(BUTTON_4, INPUT_PULLUP);
 
-  //ATIVAR OS DRIVERS
-  //DRIVER 1
-  digitalWrite(M1_SLEEP, HIGH);
-  digitalWrite(M1_RESET, HIGH);
-  digitalWrite(M1_ENABLE, LOW);
-  //DRIVER 2
-  digitalWrite(M2_SLEEP, HIGH);
-  digitalWrite(M2_RESET, HIGH);
-  digitalWrite(M2_ENABLE, LOW);
+    //ATIVAR OS DRIVERS
+    //DRIVER 1
+    digitalWrite(M1_SLEEP, HIGH);
+    digitalWrite(M1_RESET, HIGH);
+    digitalWrite(M1_ENABLE, LOW);
+    //DRIVER 2
+    digitalWrite(M2_SLEEP, HIGH);
+    digitalWrite(M2_RESET, HIGH);
+    digitalWrite(M2_ENABLE, LOW);
 }
 
 void loop() {
@@ -148,7 +148,7 @@ void loop() {
     else{
         b4_pressed = false;
     }
-    
+
     if(b1_pressed != b2_pressed){
         digitalWrite(M1_DIRECTION, b1_pressed);
         ledcWrite(1, 128);
