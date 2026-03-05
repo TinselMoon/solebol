@@ -1,16 +1,9 @@
 #include <Arduino.h>
-#include "led_rgb.hpp"
 
 //FITA LED
-#define PIN_LED 13
-#define AMARELO 16768256 
-#define VERMELHO 16515843
-#define VERDE 63240
-#define AZUL 49911
-#define MAGENTA 16711935
-#define CIANO 3407871
-#define LARANJA 16093234
-#define LIMAO 13434777
+#define R_PIN 46
+#define G_PIN 9
+#define B_PIN 10
 
 //Motores
 #define M1_DIRECTION 19
@@ -33,6 +26,9 @@
 #define BUTTON_3 6
 #define BUTTON_4 7
 
+//LEDS
+const int leds[] = {15, 16, 17, 18, 8};
+
 //Variables timer
 unsigned long timer_b1;
 unsigned long timer_b2;
@@ -50,21 +46,50 @@ bool b2_pressed = false;
 bool b3_pressed = false;
 bool b4_pressed = false;
 
-led_rgb LED;
 unsigned long timer_led = 0;
 int last_color = 0;
 
-const int colors[] = {VERMELHO, VERDE, AZUL, AMARELO, MAGENTA, CIANO, LARANJA, LIMAO};
+int tam_leds = sizeof(leds) / sizeof(leds[0]);
 
-#define NUM_COLORS (sizeof(colors) / sizeof(colors[0]))
+TaskHandle_t Task1;
+
+void setColor(int r, int g, int b) {
+    ledcWrite(2, r);
+    ledcWrite(3, g);
+    ledcWrite(4, b);
+}
+
+void Task1code(void * parameter);
 
 void setup() {
 
-    LED.init();
+    xTaskCreatePinnedToCore(
+      Task1code, /* Function to implement the task */
+      "Task1", /* Name of the task */
+      10000,  /* Stack size in words */
+      NULL,  /* Task input parameter */
+      0,  /* Priority of the task */
+      &Task1,  /* Task handle. */
+      0); /* Core where the task should run */
+
+    
+    for(int i = 0; i < tam_leds; i++){
+        pinMode(leds[i], OUTPUT);
+    }
+    ledcSetup(2, 1000, 8);
+    ledcAttachPin(R_PIN, 2);
+    //ledcAttach(R_PIN, 1000, 8);
+    ledcSetup(3, 1000, 8);
+    ledcAttachPin(G_PIN, 3);
+    //ledcAttach(G_PIN, 1000, 8);
+    ledcSetup(4, 1000, 8);
+    ledcAttachPin(B_PIN, 4);
+    //ledcAttach(B_PIN, 1000, 8);
 
     pinMode(M1_DIRECTION, OUTPUT);
     ledcSetup(1, 500, 8);
     ledcAttachPin(M1_STEP, 1);
+    //ledcAttach(M1_STEP, 500, 8);
     pinMode(M1_SLEEP, OUTPUT);
     pinMode(M1_RESET, OUTPUT);
     pinMode(M1_ENABLE, OUTPUT);
@@ -72,6 +97,7 @@ void setup() {
     pinMode(M2_DIRECTION, OUTPUT);
     ledcSetup(0, 500, 8);
     ledcAttachPin(M2_STEP, 0);
+    //ledcAttach(M2_STEP, 500, 8);
     pinMode(M2_SLEEP, OUTPUT);
     pinMode(M2_RESET, OUTPUT);
     pinMode(M2_ENABLE, OUTPUT);
@@ -165,15 +191,53 @@ void loop() {
         ledcWrite(0, 0);
     }
 
-    //Fita led
-    if(millis()- timer_led > 2000){
+    //leds piscando a cada 1 segundo
+    if(millis()- timer_led > 1000){
         timer_led = millis();
-        int color = random(0, NUM_COLORS);
+        /*int color = random(0, NUM_COLORS);
         if(last_color == color){
             color = (color + 1) % NUM_COLORS;
         }
         last_color = color;
-        LED.print_color(colors[color]);
+        LED.print_color(colors[color]);*/
+        for(int i = 0; i < tam_leds; i++){
+            digitalWrite(leds[i], !digitalRead(leds[i]));
+        }
     }
+}
 
+void Task1code( void * parameter) {
+    while(1){
+
+  for (int i = 0; i < 256; i++) {
+    setColor(255, i, 0);   // vermelho → amarelo
+    delay(20);
+  }
+
+  for (int i = 255; i >= 0; i--) {
+    setColor(i, 255, 0);   // amarelo → verde
+    delay(20);
+  }
+
+  for (int i = 0; i < 256; i++) {
+    setColor(0, 255, i);   // verde → ciano
+    delay(20);
+  }
+
+  for (int i = 255; i >= 0; i--) {
+    setColor(0, i, 255);   // ciano → azul
+    delay(20);
+  }
+
+  for (int i = 0; i < 256; i++) {
+    setColor(i, 0, 255);   // azul → magenta
+    delay(20);
+  }
+
+  for (int i = 255; i >= 0; i--) {
+    setColor(255, 0, i);   // magenta → vermelho
+    delay(20);
+  }
+
+    }
 }
